@@ -18,14 +18,20 @@ public abstract class AbstractFirestoreRepository<T> {
     protected AbstractFirestoreRepository(Firestore firestore, String collectionName) {
         this.collectionReference = firestore.collection(collectionName);
         this.collectionName = collectionName;
-        this.parameterizedType = getParamterizedType();
+        this.parameterizedType = getParameterizedType();
     }
 
-    private Class<T> getParamterizedType() {
+    private Class<T> getParameterizedType() {
         ParameterizedType type = (ParameterizedType) this.getClass().getGenericSuperclass();
         return (Class<T>) type.getActualTypeArguments()[0];
     }
 
+    /**
+     * Saves a new document
+     *
+     * @param model Document to be saved
+     * @return true if save was successful, false otherwise
+     */
     public boolean save(T model) {
         String documentId = getDocumentId(model);
         ApiFuture<WriteResult> resultApiFuture = collectionReference.document(documentId).set(model);
@@ -42,12 +48,22 @@ public abstract class AbstractFirestoreRepository<T> {
 
     }
 
+    /**
+     * Deletes the specified document
+     *
+     * @param model Document to be deleted
+     */
     public void delete(T model) {
         String documentId = getDocumentId(model);
         ApiFuture<WriteResult> resultApiFuture = collectionReference.document(documentId).delete();
 
     }
 
+    /**
+     * Retrieves all Documents from a Collection
+     *
+     * @return List of all Documents
+     */
     public List<T> retrieveAll() {
         ApiFuture<QuerySnapshot> querySnapshotApiFuture = collectionReference.get();
 
@@ -67,6 +83,12 @@ public abstract class AbstractFirestoreRepository<T> {
     }
 
 
+    /**
+     * Fetches a particular Document
+     *
+     * @param documentId Identifier for the document to be fetched
+     * @return Optional object wrapped around Document if found, else empty Optional
+     */
     public Optional<T> get(String documentId) {
         DocumentReference documentReference = collectionReference.document(documentId);
         ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = documentReference.get();
